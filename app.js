@@ -72,26 +72,28 @@ function render(step) {
   if (step === 3) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">quédate ahí</div>
-        <h2>Falta un poquito más</h2>
-        <p>No te vayas. Quédate ahí, quédate ahí…</p>
-        <div class="video-wrap">
-          <video id="tease" controls autoplay playsinline src="quedate.mp4#t=17"></video>
+        <div class="kicker">para ${escapeHtml(nombre)}</div>
+        <h2>Presiona aquí</h2>
+        <p>Hay un palo de lu’ dentro de la caja.</p>
+        <div class="party">
+          <span class="balloon b1"></span>
+          <span class="balloon b2"></span>
+          <span class="balloon b3"></span>
+          <span class="balloon b4"></span>
+          <span class="balloon b5"></span>
+          <button class="gift" id="gift" type="button" aria-label="Abrir regalo">
+            <span class="lid"></span>
+            <span class="bow"></span>
+            <span class="body"></span>
+          </button>
         </div>
-        <button class="btn" type="button" data-next="4" style="margin-top:18px">Ok, ahora sí</button>
+        <div class="inside" id="inside" hidden>
+          <div class="video-wrap">
+            <video id="tease" controls playsinline src="quedate.mp4#t=17"></video>
+          </div>
+        </div>
       </section>`;
-    const tease = document.getElementById("tease");
-    if (tease) {
-      const startAt = 17;
-      const jump = () => {
-        if (tease.currentTime < startAt) tease.currentTime = startAt;
-      };
-      tease.addEventListener("loadedmetadata", jump);
-      tease.addEventListener("canplay", jump);
-      boostSound(tease);
-      tease.play().catch(() => {});
-      tease.addEventListener("ended", () => render(4));
-    }
+    setupGift();
   }
 
   if (step === 4) {
@@ -135,6 +137,31 @@ function answerQuiz(n) {
     return;
   }
   render(2);
+}
+
+function setupGift() {
+  const gift = document.getElementById("gift");
+  const inside = document.getElementById("inside");
+  gift.addEventListener("click", () => {
+    if (gift.classList.contains("open")) return;
+    gift.classList.add("open");
+    gift.parentElement.classList.add("opened");
+    gift.setAttribute("disabled", "true");
+    setTimeout(() => {
+      inside.hidden = false;
+      const tease = document.getElementById("tease");
+      if (!tease) return;
+      const startAt = 17;
+      const jump = () => {
+        if (tease.currentTime < startAt) tease.currentTime = startAt;
+      };
+      tease.addEventListener("loadedmetadata", jump);
+      tease.addEventListener("canplay", jump);
+      boostSound(tease);
+      tease.play().catch(() => {});
+      tease.addEventListener("ended", () => render(4));
+    }, 650);
+  });
 }
 
 function boostSound(media) {
