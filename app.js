@@ -16,8 +16,23 @@ const dirs = [
   [-1, 0],
 ];
 
+const pistasMal = [
+  "Frío. Pista: palo de lu’… no es por ahí.",
+  "Esa pared no canta. Ponte pa’ eso, pero al lado.",
+  "Nop. El palo de lu’ está más adelante.",
+  "Te desviaste. Sigue el ritmo, un paso.",
+];
+
+const pistasBien = [
+  "Eso. Un poco más.",
+  "Ahí va. Palo de lu’.",
+  "Ponte pa’ eso… sigue.",
+  "Casi escuchas la pista.",
+];
+
 let pos = { r: 0, c: 0 };
 let fleeClicks = 0;
+let pistaI = 0;
 
 function findStart() {
   for (let r = 0; r < maze.length; r++) {
@@ -37,9 +52,9 @@ function render(step) {
   if (step === 0) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">solo para ti</div>
+        <div class="kicker">pista 1</div>
         <h1>Ey, ${escapeHtml(nombre)}…</h1>
-        <p>Alguien dejó esto escondido. No es spam. Es un laberinto chiquito. Dale aquí.</p>
+        <p>Alguien dejó esto escondido. Si escuchas “palo de lu’”, vas bien. Dale aquí.</p>
         <button class="btn" type="button" data-next="1">Abrir</button>
       </section>`;
   }
@@ -47,9 +62,9 @@ function render(step) {
   if (step === 1) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">paso 1</div>
+        <div class="kicker">pista 2</div>
         <h2>Un poco más</h2>
-        <p>Todavía no. Sigue. El premio está al fondo.</p>
+        <p>Todavía no suena. Ponte pa’ eso… pero sigue caminando.</p>
         <button class="btn" type="button" data-next="2">Seguir</button>
       </section>`;
   }
@@ -58,10 +73,10 @@ function render(step) {
     app.innerHTML = `
       <section class="card">
         <div class="kicker">el laberinto</div>
-        <h2>Encuentra la salida</h2>
-        <p>Toca una casilla de al lado. La estrella es el final.</p>
+        <h2>Encuentra el palo de lu’</h2>
+        <p>Toca una casilla de al lado. La estrella es la salida. Si te trabas: ponte pa’ eso, no te rajes.</p>
         <div class="maze" id="maze"></div>
-        <div class="msg" id="maze-msg"></div>
+        <div class="msg" id="maze-msg">Pista: no cruces las paredes oscuras.</div>
       </section>`;
     drawMaze();
   }
@@ -69,9 +84,9 @@ function render(step) {
   if (step === 3) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">casi</div>
+        <div class="kicker">pista 3</div>
         <h2>Un poco más…</h2>
-        <p>En serio. Un clic más. No te rajes.</p>
+        <p>Ya casi. El palo de lu’ está detrás de un botón nervioso.</p>
         <button class="btn" type="button" data-next="4">Dale</button>
       </section>`;
   }
@@ -79,11 +94,11 @@ function render(step) {
   if (step === 4) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">ok, ahora sí</div>
+        <div class="kicker">última pista</div>
         <h2>Atrápame</h2>
-        <p>El botón se pone nervioso. Píllalo.</p>
+        <p>Ponte pa’ eso. Píllalo tres veces.</p>
         <div class="flee-wrap">
-          <button class="btn flee" id="flee" type="button">Aquí</button>
+          <button class="btn flee" id="flee" type="button">Palo de lu’</button>
         </div>
       </section>`;
     setupFlee();
@@ -92,23 +107,27 @@ function render(step) {
   if (step === 5) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">último</div>
+        <div class="kicker">llegaste</div>
         <h2>Feliz cumple, ${escapeHtml(nombre)}</h2>
         <p>Esto era. Ponte pa’ eso.</p>
         <div class="heart">🎂</div>
-        <div class="video-wrap">
-          <iframe
-            src="https://www.youtube.com/embed/352aSFm5SEU?autoplay=1&rel=0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-            title="Ponte Pa Eso"></iframe>
-        </div>
+        <audio id="voz" class="voz" controls autoplay playsinline src="voz.m4a"></audio>
+        <p class="msg" id="audio-msg"></p>
       </section>`;
   }
 
   app.querySelectorAll("[data-next]").forEach((btn) => {
     btn.addEventListener("click", () => render(Number(btn.dataset.next)));
   });
+
+  const voz = document.getElementById("voz");
+  if (voz) {
+    voz.addEventListener("error", () => {
+      voz.style.display = "none";
+      const msg = document.getElementById("audio-msg");
+      if (msg) msg.textContent = "El audio llega en un rato. Recarga después.";
+    });
+  }
 }
 
 function drawMaze() {
@@ -142,7 +161,8 @@ function tryMove(r, c) {
   const msg = document.getElementById("maze-msg");
   const ok = dirs.some(([dr, dc]) => pos.r + dr === r && pos.c + dc === c);
   if (!ok || !walkable(r, c)) {
-    msg.textContent = "Por ahí no. Un paso a la vez.";
+    msg.textContent = pistasMal[pistaI % pistasMal.length];
+    pistaI += 1;
     return;
   }
   pos = { r, c };
@@ -150,7 +170,8 @@ function tryMove(r, c) {
     render(3);
     return;
   }
-  msg.textContent = "Eso. Un poco más.";
+  msg.textContent = pistasBien[pistaI % pistasBien.length];
+  pistaI += 1;
   drawMaze();
 }
 
@@ -165,7 +186,7 @@ function setupFlee() {
     e.preventDefault();
     btn.style.left = 18 + Math.random() * 64 + "%";
     btn.style.top = 18 + Math.random() * 64 + "%";
-    btn.textContent = fleeClicks === 1 ? "Casi" : "Un poco más";
+    btn.textContent = fleeClicks === 1 ? "Ponte pa’ eso" : "Un poco más";
   });
 }
 
