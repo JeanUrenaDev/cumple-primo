@@ -1,5 +1,5 @@
 const params = new URLSearchParams(location.search);
-const nombre = (params.get("n") || "primo").trim();
+const nombre = (params.get("n") || "Jose Angel").trim();
 
 const maze = [
   "S....",
