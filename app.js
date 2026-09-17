@@ -117,6 +117,7 @@ function render(step) {
       </section>`;
     const tease = document.getElementById("tease");
     if (tease) {
+      boostSound(tease);
       tease.addEventListener("ended", () => render(6));
     }
   }
@@ -139,6 +140,7 @@ function render(step) {
 
   const voz = document.getElementById("voz");
   if (voz) {
+    boostSound(voz);
     voz.addEventListener("error", () => {
       voz.style.display = "none";
       const msg = document.getElementById("audio-msg");
@@ -205,6 +207,26 @@ function setupFlee() {
     btn.style.top = 18 + Math.random() * 64 + "%";
     btn.textContent = fleeClicks === 1 ? "Ponte pa’ eso" : "Un poco más";
   });
+}
+
+function boostSound(media) {
+  try {
+    media.volume = 1;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    if (!window._cumpleAudio) {
+      window._cumpleAudio = new Ctx();
+    }
+    const ctx = window._cumpleAudio;
+    ctx.resume();
+    const src = ctx.createMediaElementSource(media);
+    const gain = ctx.createGain();
+    gain.gain.value = 3.2;
+    src.connect(gain);
+    gain.connect(ctx.destination);
+  } catch (_) {
+    // el navegador ya lo está reproduciendo igual
+  }
 }
 
 function escapeHtml(value) {
