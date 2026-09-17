@@ -107,6 +107,23 @@ function render(step) {
   if (step === 5) {
     app.innerHTML = `
       <section class="card">
+        <div class="kicker">quédate ahí</div>
+        <h2>Falta un poquito más</h2>
+        <p>No te vayas. Quédate ahí, quédate ahí…</p>
+        <div class="video-wrap">
+          <video id="tease" controls autoplay playsinline src="quedate.mp4"></video>
+        </div>
+        <button class="btn" type="button" data-next="6" style="margin-top:18px">Ok, ahora sí</button>
+      </section>`;
+    const tease = document.getElementById("tease");
+    if (tease) {
+      tease.addEventListener("ended", () => render(6));
+    }
+  }
+
+  if (step === 6) {
+    app.innerHTML = `
+      <section class="card">
         <div class="kicker">llegaste</div>
         <h2>Feliz cumple, ${escapeHtml(nombre)}</h2>
         <p>Esto era. Ponte pa’ eso.</p>
