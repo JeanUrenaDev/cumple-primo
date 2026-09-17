@@ -23,7 +23,6 @@ const pistasMal = [
 ];
 
 let quizI = 0;
-let fleeClicks = 0;
 let pistaI = 0;
 
 function render(step) {
@@ -73,36 +72,13 @@ function render(step) {
   if (step === 3) {
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">pista 3</div>
-        <h2>Un poco más…</h2>
-        <p>Ya casi. El palo de lu’ está detrás de un botón nervioso.</p>
-        <button class="btn" type="button" data-next="4">Dale</button>
-      </section>`;
-  }
-
-  if (step === 4) {
-    app.innerHTML = `
-      <section class="card">
-        <div class="kicker">última pista</div>
-        <h2>Atrápame</h2>
-        <p>Ponte pa’ eso. Píllalo tres veces.</p>
-        <div class="flee-wrap">
-          <button class="btn flee" id="flee" type="button">Palo de lu’</button>
-        </div>
-      </section>`;
-    setupFlee();
-  }
-
-  if (step === 5) {
-    app.innerHTML = `
-      <section class="card">
         <div class="kicker">quédate ahí</div>
         <h2>Falta un poquito más</h2>
         <p>No te vayas. Quédate ahí, quédate ahí…</p>
         <div class="video-wrap">
           <video id="tease" controls autoplay playsinline src="quedate.mp4#t=17"></video>
         </div>
-        <button class="btn" type="button" data-next="6" style="margin-top:18px">Ok, ahora sí</button>
+        <button class="btn" type="button" data-next="4" style="margin-top:18px">Ok, ahora sí</button>
       </section>`;
     const tease = document.getElementById("tease");
     if (tease) {
@@ -114,11 +90,11 @@ function render(step) {
       tease.addEventListener("canplay", jump);
       boostSound(tease);
       tease.play().catch(() => {});
-      tease.addEventListener("ended", () => render(6));
+      tease.addEventListener("ended", () => render(4));
     }
   }
 
-  if (step === 6) {
+  if (step === 4) {
     app.innerHTML = `
       <section class="card">
         <div class="kicker">llegaste</div>
@@ -159,21 +135,6 @@ function answerQuiz(n) {
     return;
   }
   render(2);
-}
-
-function setupFlee() {
-  const btn = document.getElementById("flee");
-  btn.addEventListener("click", (e) => {
-    fleeClicks += 1;
-    if (fleeClicks >= 3) {
-      render(5);
-      return;
-    }
-    e.preventDefault();
-    btn.style.left = 18 + Math.random() * 64 + "%";
-    btn.style.top = 18 + Math.random() * 64 + "%";
-    btn.textContent = fleeClicks === 1 ? "Ponte pa’ eso" : "Un poco más";
-  });
 }
 
 function boostSound(media) {
