@@ -85,6 +85,11 @@ p {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
+  margin-bottom: 16px;
+}
+
+.row .btn {
+  min-width: 72px;
 }
 
 .maze {

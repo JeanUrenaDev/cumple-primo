@@ -1,50 +1,30 @@
 const params = new URLSearchParams(location.search);
 const nombre = (params.get("n") || "Jose Angel").trim();
 
-const maze = [
-  "S....",
-  ".###.",
-  "...#.",
-  ".#.#.",
-  "...#G",
-];
-
-const dirs = [
-  [0, 1],
-  [0, -1],
-  [1, 0],
-  [-1, 0],
+const quizzes = [
+  {
+    title: "Una suma",
+    q: "¿Cuánto es 4 + 3?",
+    ok: 7,
+    opts: [5, 7, 8],
+  },
+  {
+    title: "Una resta",
+    q: "¿Cuánto es 9 − 2?",
+    ok: 7,
+    opts: [6, 7, 11],
+  },
 ];
 
 const pistasMal = [
-  "Frío. Pista: palo de lu’… no es por ahí.",
-  "Esa pared no canta. Ponte pa’ eso, pero al lado.",
-  "Nop. El palo de lu’ está más adelante.",
-  "Te desviaste. Sigue el ritmo, un paso.",
+  "Nop. Pista: palo de lu’… cuenta otra vez.",
+  "Frío. Ponte pa’ eso, pero mira bien el número.",
+  "Esa no. El palo de lu’ no es esa respuesta.",
 ];
 
-const pistasBien = [
-  "Eso. Un poco más.",
-  "Ahí va. Palo de lu’.",
-  "Ponte pa’ eso… sigue.",
-  "Casi escuchas la pista.",
-];
-
-let pos = { r: 0, c: 0 };
+let quizI = 0;
 let fleeClicks = 0;
 let pistaI = 0;
-
-function findStart() {
-  for (let r = 0; r < maze.length; r++) {
-    const c = maze[r].indexOf("S");
-    if (c >= 0) return { r, c };
-  }
-  return { r: 0, c: 0 };
-}
-
-function walkable(r, c) {
-  return maze[r] && maze[r][c] && maze[r][c] !== "#";
-}
 
 function render(step) {
   const app = document.getElementById("app");
@@ -64,21 +44,30 @@ function render(step) {
       <section class="card">
         <div class="kicker">pista 2</div>
         <h2>Un poco más</h2>
-        <p>Todavía no suena. Ponte pa’ eso… pero sigue caminando.</p>
+        <p>Todavía no suena. Ponte pa’ eso… primero una cuenta fácil.</p>
         <button class="btn" type="button" data-next="2">Seguir</button>
       </section>`;
   }
 
   if (step === 2) {
+    const item = quizzes[quizI];
     app.innerHTML = `
       <section class="card">
-        <div class="kicker">el laberinto</div>
-        <h2>Encuentra el palo de lu’</h2>
-        <p>Toca una casilla de al lado. La estrella es la salida. Si te trabas: ponte pa’ eso, no te rajes.</p>
-        <div class="maze" id="maze"></div>
-        <div class="msg" id="maze-msg">Pista: no cruces las paredes oscuras.</div>
+        <div class="kicker">${escapeHtml(item.title)}</div>
+        <h2>${escapeHtml(item.q)}</h2>
+        <p>Pista: palo de lu’. Si fallas, prueba otra.</p>
+        <div class="row" id="opts"></div>
+        <div class="msg" id="quiz-msg"></div>
       </section>`;
-    drawMaze();
+    const row = document.getElementById("opts");
+    item.opts.forEach((n) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn ghost";
+      btn.textContent = String(n);
+      btn.addEventListener("click", () => answerQuiz(n));
+      row.appendChild(btn);
+    });
   }
 
   if (step === 3) {
@@ -149,49 +138,20 @@ function render(step) {
   }
 }
 
-function drawMaze() {
-  const root = document.getElementById("maze");
-  root.innerHTML = "";
-  for (let r = 0; r < 5; r++) {
-    for (let c = 0; c < 5; c++) {
-      const cell = document.createElement("button");
-      cell.type = "button";
-      cell.className = "cell";
-      const ch = maze[r][c];
-      if (ch === "#") {
-        cell.disabled = true;
-        cell.textContent = "";
-      } else {
-        cell.classList.add("path");
-        cell.textContent = ch === "G" ? "★" : "";
-        if (ch === "G") cell.classList.add("goal");
-        cell.addEventListener("click", () => tryMove(r, c));
-      }
-      if (pos.r === r && pos.c === c) {
-        cell.classList.add("here");
-        cell.textContent = "●";
-      }
-      root.appendChild(cell);
-    }
-  }
-}
-
-function tryMove(r, c) {
-  const msg = document.getElementById("maze-msg");
-  const ok = dirs.some(([dr, dc]) => pos.r + dr === r && pos.c + dc === c);
-  if (!ok || !walkable(r, c)) {
+function answerQuiz(n) {
+  const item = quizzes[quizI];
+  const msg = document.getElementById("quiz-msg");
+  if (n !== item.ok) {
     msg.textContent = pistasMal[pistaI % pistasMal.length];
     pistaI += 1;
     return;
   }
-  pos = { r, c };
-  if (maze[r][c] === "G") {
+  quizI += 1;
+  if (quizI >= quizzes.length) {
     render(3);
     return;
   }
-  msg.textContent = pistasBien[pistaI % pistasBien.length];
-  pistaI += 1;
-  drawMaze();
+  render(2);
 }
 
 function setupFlee() {
@@ -237,5 +197,4 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
-pos = findStart();
 render(0);
