@@ -100,13 +100,20 @@ function render(step) {
         <h2>Falta un poquito más</h2>
         <p>No te vayas. Quédate ahí, quédate ahí…</p>
         <div class="video-wrap">
-          <video id="tease" controls autoplay playsinline src="quedate.mp4"></video>
+          <video id="tease" controls autoplay playsinline src="quedate.mp4#t=17"></video>
         </div>
         <button class="btn" type="button" data-next="6" style="margin-top:18px">Ok, ahora sí</button>
       </section>`;
     const tease = document.getElementById("tease");
     if (tease) {
+      const startAt = 17;
+      const jump = () => {
+        if (tease.currentTime < startAt) tease.currentTime = startAt;
+      };
+      tease.addEventListener("loadedmetadata", jump);
+      tease.addEventListener("canplay", jump);
       boostSound(tease);
+      tease.play().catch(() => {});
       tease.addEventListener("ended", () => render(6));
     }
   }
